@@ -1,0 +1,8 @@
+[package]
+name = "assembler"
+version = "0.1.0"
+authors = ["Nathan Bacon <nhatch-martinez@duoconsulting.com>"]
+
+[dependencies]
+termion = "1.0"
+
