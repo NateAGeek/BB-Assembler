@@ -1,42 +1,178 @@
 extern crate termion;
 
-use termion::event::Key;
-use termion::input::TermRead;
-use termion::raw::IntoRawMode;
-use std::io::{Write, stdout, stdin};
+use std::env;
+use std::io;
+use std::fs::File;
+use std::io::Read;
+use std::collections::HashMap;
 
-fn update(stdin:&mut std::io::Stdin, stdout:&mut std::io::Stdout) -> () {
-  for c in stdin.keys() {
-     match c {
-      Ok(key) => {
-        match key {
-            Key::Char(c) => {
-               draw(stdout);
-            },
-            _ => {}
-        }
-      },
-      Err(_) => {}
-     }
-  }
+struct Container {
+    name: String
 }
 
-fn draw(stdout:&mut std::io::Stdout) -> () {
-  write!(stdout, "{}{}", termion::cursor::Goto(1, 1), termion::clear::All).unwrap();  
-    for red in 0..32 {
-        let red = red * 8;
-        for green in 0..64 {
-            let green = green * 4;
-            write!(stdout, "{} ", termion::color::Bg(termion::color::Rgb(red, green, 25))).unwrap();
-        }
-        write!(stdout, "\n\r").unwrap();
+struct ScaleValue {
+    bit_length: 0,
+    array_length: 1,
+    value: [u64; 1] = [0; 1],
+    value_type: String
+}
+
+struct Register {
+    container: Container,
+    value: u64
+}
+
+struct Variable {
+    container: Container,
+    value: ScaleValue
+}
+
+impl ScaleValue {
+    fn increaseSize() {
+        old_val = self.value;
+        value = [u64; array_length*2];
+        array_length *= 2;
     }
-writeln!(stdout, "{}", termion::style::Reset).unwrap();
-  stdout.flush().unwrap();
+    fn getBitValue(index: u64) {
+        let value_chunk_index = index/64;
+        let value_index = index%64;
+
+        return (value[value_chunk_index] >> value_index) & 1u64;
+    }
 }
 
-fn main() -> () {
-  let mut stdin: std::io::Stdin = stdin();
-  let mut stdout: std::io::Stdout = stdout();  
-  update(&mut stdin, &mut stdout);
+//fn is_reg(loc: str) -> bool {
+//    return available_regs.iter().any(|&reg| reg == loc);
+//}
+//
+//fn is_mem(loc: str) -> bool {
+//    return true;
+//}
+//
+fn asm_mov(loc_one: &String, loc_two: &String, registers: &mut HashMap<String, u64>) {
+    *registers.get_mut(loc_two).unwrap() = *registers.get::<String>(loc_one).unwrap();
+
+    println!("MOV from({}) to({})", loc_one, loc_two);
+    println!("key_value {}", registers.get(loc_one).unwrap());
+    println!("key_value {}", registers.get(loc_two).unwrap());
+}
+
+fn asm_add(loc_one: &String, loc_two: &String, registers: &mut HashMap<String, u64>) {
+    *registers.get_mut(loc_two).unwrap() += *registers.get::<String>(loc_one).unwrap();
+
+    println!("ADD from({}) to({})", loc_one, loc_two);
+    println!("key_value {}", registers.get(loc_one).unwrap());
+    println!("key_value {}", registers.get(loc_two).unwrap());
+}
+
+fn asm_sub(loc_one: &String, loc_two: &String, registers: &mut HashMap<String, u64>) {
+    *registers.get_mut(loc_two).unwrap() -= *registers.get::<String>(loc_one).unwrap();
+
+    println!("SUB from({}) to({})", loc_one, loc_two);
+    println!("key_value {}", registers.get(loc_one).unwrap());
+    println!("key_value {}", registers.get(loc_two).unwrap());
+}
+
+fn asm_mul(loc_one: &String, loc_two: &String, registers: &mut HashMap<String, u64>) {
+    *registers.get_mut(loc_two).unwrap() *= *registers.get::<String>(loc_one).unwrap();
+
+    println!("SUB from({}) to({})", loc_one, loc_two);
+    println!("key_value {}", registers.get(loc_one).unwrap());
+    println!("key_value {}", registers.get(loc_two).unwrap());
+}
+
+fn is_supported(command: &String, available_commands: &Vec<String>) -> bool {
+    return true;
+}
+
+fn create_registers(registers: &mut HashMap<String, u64>) -> (){
+    registers.entry("a".to_string()).or_insert(0);
+    registers.entry("b".to_string()).or_insert(100);
+}
+
+fn start_interpreter(available_registers: Vec<String>, available_commands: Vec<String>) -> Result<(), io::Error> {
+
+    let mut string_variables: HashMap<String, String> = HashMap::new();
+    let mut number_variables: HashMap<String, u64> = HashMap::new();
+    let mut registers: HashMap<String, u64> = HashMap::new();
+
+    let mut file_name: String = env::args().nth(1).unwrap();
+    let mut file = try!(File::open(file_name));
+    let mut file_text = String::new();
+
+    create_registers(&mut registers);
+
+    try!(file.read_to_string(&mut file_text));
+    for line in file_text.lines() {
+        let mut line_splits = line.split_whitespace();
+        let mut command = line_splits.next().unwrap().to_string();
+        if is_supported(&command, &available_commands) {
+            let mut loc_1 = line_splits.next().unwrap().replace(",", "").to_string();
+            let mut loc_2 = line_splits.next().unwrap().to_string();
+            if command == "mov" {
+                asm_mov(&mut loc_1, &mut loc_2, &mut registers);
+            } else if command == "add" {
+                asm_add(&mut loc_1, &mut loc_2, &mut registers);
+            } else if command == "sub" {
+                asm_sub(&mut loc_1, &mut loc_2, &mut registers);
+            } else if command == "mul" {
+                asm_mul(&mut loc_1, &mut loc_2, &mut registers);
+            } else if command == "div"
+            println!("a = {}", registers.get(&"a".to_string()).unwrap());
+            println!("b = {}", registers.get(&"b".to_string()).unwrap());
+        }
+        println!("Line: {}", line);
+        println!("Command {}", command);
+    }
+    Ok(())
+}
+
+fn generate_registers(regs: Vec<String>) -> Vec<String> {
+    let mut extensions = Vec::new();
+            extensions.push("".to_string());
+            extensions.push("b".to_string());
+            extensions.push("n".to_string());
+            extensions.push("w".to_string());
+            extensions.push("d".to_string());
+            extensions.push("q".to_string());
+                              
+    let mut extended_registers = Vec::new();
+
+    for reg in regs.iter() {
+        for exe in extensions.iter() {
+            extended_registers.push(format!("{}{}", reg, exe));
+        }
+    }
+
+    return extended_registers;
+}
+
+fn main() {
+    let mut registers:Vec<String> = Vec::new();
+            registers.push("a".to_string());
+            registers.push("b".to_string());
+            registers.push("c".to_string());
+            registers.push("d".to_string());
+            registers.push("e".to_string());
+            registers.push("f".to_string());
+            registers.push("g".to_string());
+            registers.push("h".to_string());
+            registers.push("i".to_string());
+            registers.push("j".to_string());
+            registers.push("k".to_string());
+            registers.push("l".to_string());
+            registers.push("m".to_string());
+            registers.push("n".to_string());
+            registers.push("o".to_string());
+            registers.push("p".to_string());
+
+    let mut available_commands = Vec::new();
+            available_commands.push("mov".to_string());
+            available_commands.push("add".to_string());
+            available_commands.push("sub".to_string());
+
+    let mut available_registers = generate_registers(registers);
+
+    start_interpreter(available_registers, available_commands);
+
 }

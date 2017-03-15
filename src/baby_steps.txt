@@ -1,0 +1,5 @@
+mov a, b
+add a, b
+sub a, b
+sub a, b
+mov b, a
