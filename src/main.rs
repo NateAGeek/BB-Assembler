@@ -6,14 +6,18 @@ use std::fs::File;
 use std::io::Read;
 use std::collections::HashMap;
 
+const POSITIVE_NUMBER: bool = true;
+const NEGATIVE_NUMBER: bool = true;
+
 struct Container {
     name: String
 }
 
 struct ScaleValue {
-    bit_length: 0,
-    array_length: 1,
-    value: [u64; 1] = [0; 1],
+    sign: bool,
+    bit_length: u64,
+    array_length: u64,
+    value: [u64; 1],
     value_type: String
 }
 
@@ -28,27 +32,28 @@ struct Variable {
 }
 
 impl ScaleValue {
-    fn increaseSize() {
-        old_val = self.value;
-        value = [u64; array_length*2];
-        array_length *= 2;
+    fn new() -> ScaleValue {
+        ScaleValue {
+            sign: POSITIVE_NUMBER,
+            bit_length: 64,
+            array_length: 1,
+            value: [0; 1],
+            value_type: "number".to_string()
+        }
     }
-    fn getBitValue(index: u64) {
-        let value_chunk_index = index/64;
-        let value_index = index%64;
 
-        return (value[value_chunk_index] >> value_index) & 1u64;
-    }
+//    fn increaseSize() {
+//        old_val = self.value;
+//        value = [u64; array_length*2];
+//        array_length *= 2;
+//    }
+//    fn getBitValue(index: u64) {
+//        let value_chunk_index = index/64;
+//        let value_index = index%64;
+//        return (value[value_chunk_index] >> value_index) & 1u64;
+//    }
 }
 
-//fn is_reg(loc: str) -> bool {
-//    return available_regs.iter().any(|&reg| reg == loc);
-//}
-//
-//fn is_mem(loc: str) -> bool {
-//    return true;
-//}
-//
 fn asm_mov(loc_one: &String, loc_two: &String, registers: &mut HashMap<String, u64>) {
     *registers.get_mut(loc_two).unwrap() = *registers.get::<String>(loc_one).unwrap();
 
@@ -117,7 +122,9 @@ fn start_interpreter(available_registers: Vec<String>, available_commands: Vec<S
                 asm_sub(&mut loc_1, &mut loc_2, &mut registers);
             } else if command == "mul" {
                 asm_mul(&mut loc_1, &mut loc_2, &mut registers);
-            } else if command == "div"
+            } else if command == "div" {
+            
+            }
             println!("a = {}", registers.get(&"a".to_string()).unwrap());
             println!("b = {}", registers.get(&"b".to_string()).unwrap());
         }
@@ -147,7 +154,7 @@ fn generate_registers(regs: Vec<String>) -> Vec<String> {
     return extended_registers;
 }
 
-fn main() {
+fn test_asm() {
     let mut registers:Vec<String> = Vec::new();
             registers.push("a".to_string());
             registers.push("b".to_string());
@@ -174,5 +181,14 @@ fn main() {
     let mut available_registers = generate_registers(registers);
 
     start_interpreter(available_registers, available_commands);
+}
 
+fn test_things () {
+    let taco = ScaleValue::new();
+    println!("sign: {}", taco.sign);    
+}
+
+fn main() {
+    //test_asm();
+    test_things();
 }
